@@ -1,6 +1,8 @@
 // worker.js
-const { createClient } = require('@supabase/supabase-js');
-const sharp = require('sharp');
+// Replace require with import
+import { createClient } from '@supabase/supabase-js';
+import sharp from 'sharp';
+
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
