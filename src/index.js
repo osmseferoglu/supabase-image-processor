@@ -1,54 +1,45 @@
-// worker.js
-const { createClient } = require('@supabase/supabase-js');
-const sharp = require('sharp');
+// server.js
+import express from 'express';
+import { createClient } from '@supabase/supabase-js';
+import sharp from 'sharp';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const app = express();
+app.use(express.json());
 
-async function processQueue() {
-  const { data: job } = await supabase
-    .from('image_processing_queue')
-    .select('*')
-    .eq('processed', false)
-    .limit(1)
-    .single();
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  if (!job) return;
+app.post('/process-image', async (req, res) => {
+  const { bucket_id, name } = req.body.record;
 
-  console.log(`Processing: ${job.name}`);
+  console.log(`📥 Image uploaded: ${name}`);
 
-  const { data: file } = await supabase.storage
-    .from(job.bucket_id)
-    .download(job.name);
+  const { data, error } = await supabase.storage.from(bucket_id).download(name);
+  if (error || !data) {
+    console.error('Error downloading image:', error);
+    return res.status(500).send('Download failed');
+  }
 
-  const inputBuffer = await file.arrayBuffer();
-  const outputBuffer = await sharp(Buffer.from(inputBuffer))
-    .resize(300)
-    .jpeg()
+  const resizedImage = await sharp(await data.arrayBuffer())
+    .resize(200)
     .toBuffer();
 
-  const thumbPath = `thumbnails/${job.name}`;
+  const thumbPath = `thumbnails/${name}`;
 
   const { error: uploadError } = await supabase.storage
-    .from(job.bucket_id)
-    .upload(thumbPath, outputBuffer, {
+    .from(bucket_id)
+    .upload(thumbPath, resizedImage, {
       contentType: 'image/jpeg',
-      upsert: true,
+      upsert: true
     });
 
   if (uploadError) {
-    console.error("Upload failed:", uploadError.message);
-    return;
+    console.error('Thumbnail upload failed:', uploadError);
+    return res.status(500).send('Upload failed');
   }
 
-  await supabase
-    .from('image_processing_queue')
-    .update({ processed: true })
-    .eq('id', job.id);
+  console.log(`✅ Thumbnail uploaded: ${thumbPath}`);
+  res.send('Thumbnail created');
+});
 
-  console.log(`✅ Thumbnail created for ${job.name}`);
-}
-
-setInterval(processQueue, 5000);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Worker listening on port ${PORT}`));
