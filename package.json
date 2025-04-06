@@ -1,0 +1,20 @@
+{
+  "name": "supabase-image-processor",
+  "version": "1.0.0",
+  "description": "Image processing service for Supabase Storage using sharp",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "sharp": "^0.33.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
