@@ -6,7 +6,16 @@ import sharp from 'sharp';
 const app = express();
 app.use(express.json());
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 app.post('/process-image', async (req, res) => {
   const { bucket_id, name } = req.body.record;
@@ -24,10 +33,10 @@ app.post('/process-image', async (req, res) => {
     .resize(200)
     .toBuffer();
 
-  const thumbPath = `thumbnails/${name}`;
+  const thumbPath = name;
 
   const { error: uploadError } = await supabase.storage
-    .from(bucket_id)
+    .from('thumbnails')
     .upload(thumbPath, resizedImage, {
       contentType: 'image/jpeg',
       upsert: true

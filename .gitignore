@@ -10,3 +10,5 @@ npm-debug.log*
 
 # OS
 .DS_Store
+supabase/migrations/20250407_storage_policies.sql
+supabase/migrations/20250407_image_processing.sql
