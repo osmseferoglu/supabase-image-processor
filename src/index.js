@@ -11,7 +11,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 app.post('/process-image', async (req, res) => {
   const { bucket_id, name } = req.body.record;
 
-  console.log(`📥 Image uploaded: ${name}`);
+  console.log(`Processing: ${name}`);
+  console.log(`📥 Bucket details: ${bucket_id} ${name}`);
 
   const { data, error } = await supabase.storage.from(bucket_id).download(name);
   if (error || !data) {
