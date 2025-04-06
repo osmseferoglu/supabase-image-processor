@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Image processing service for Supabase Storage using sharp",
   "main": "src/index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
